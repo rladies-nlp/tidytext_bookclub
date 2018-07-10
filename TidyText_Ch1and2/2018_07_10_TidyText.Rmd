@@ -1,0 +1,119 @@
+---
+title: "Lightning Summary: \nStarting with Tidy Text"
+author: "Katherine Simeon"
+date: "July 9, 2018"
+output: 
+  slidy_presentation:
+    highlight: NULL
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidytext)
+library(dplyr)
+library(stringr)
+library(rtweet)
+library(wordcloud2)
+library(ggplot2)
+```
+
+## Tidy Format 
+  
+- Each variable is a column   
+- Each observation is a row - for text, this means one **token** per row (or one meaningful unit of text, e.g. word)  
+- Each type of observational unit is a table      
+  
+
+## Let's get our data
+
+Let's look at **#RLadies** on Twitter during the past week:  
+  
+```{r, echo=TRUE}
+rladies_tweets <- as_tibble(read.csv("rladies_twitter_data.csv",stringsAsFactors = FALSE))
+# creates a tibble, see more info at vignettes("tibble")
+```
+
+## Let's look at our data
+
+```{r, echo=TRUE}
+head(rladies_tweets)
+```
+
+## Tokenization
+  
+Let's make our data *one token per row*:   
+  
+```{r, echo=TRUE,message=FALSE}
+rladies_table <- rladies_tweets %>% 
+  unnest_tokens(word, text)
+
+# Comparing dimensions
+dim(rladies_tweets) # each row is a tweet
+dim(rladies_table) # each row is a word
+```
+  
+  
+## Filtering stop words    
+  
+The tidytext package has a dataset of **stop words** (extremely common words that might not be informative for analysis) that we can use to filter our data:  
+  
+```{r, echo=TRUE,message=FALSE}
+data(stop_words) # get stop words
+rladies_table <- rladies_table %>% # Filter out of r_ladies table
+  anti_join(stop_words)  
+
+rladies_table <-rladies_table %>% # Remove other words (specified)
+  filter(!word %in% c('t.co', 'https','de','el', 'en'))
+```
+  
+## Let's do a word count  
+  
+```{r, echo=TRUE}
+rladies_wc <- rladies_table %>%
+  count(word, sort = TRUE) 
+head(rladies_wc)
+```
+
+## Let's make a word cloud!  
+  
+Using the **wordcloud2** package:   
+  
+```{r, echo=TRUE}
+# Creating an R-Ladies Color Palette (from the ggplot2 theme of R-Ladies Global)
+rladies_palette <- c("#88398A","#D3D3D3","#181818","#562457","#88398A")
+wordcloud2(rladies_wc, size=2, shape="star", color=rladies_palette)
+```
+  
+## Sentiment Analysis  
+  
+The tidytext package has 3 lexicons for sentiment analysis:  
+  
+- AFINN -- numerical scale from -5 to 5  
+- Bing -- binary categorization (postive or negative)  
+- NRC -- Yes/no categorization of:  
+    + Positive  
+    + Negative  
+    + Anger  
+    + Anticipation  
+    + Disgust  
+    + Fear  
+    + Joy  
+    + Sadness  
+    + Surprise  
+    + Trust  
+  
+  
+## Let's try it with the NRC lexicon  
+  
+```{r, echo=TRUE, message=FALSE}
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+rladies_joy <- rladies_table %>%
+  inner_join(nrc_joy) %>%
+  count(word,sort=TRUE)
+
+rladies_joy
+```
+  
