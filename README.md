@@ -1,5 +1,7 @@
-## Text Mining with R - Book Club!  
+## Analyzing word and document frequency: tf-idf  
   
-This is our repo for our book club on **Text Mining with R**  
+NLP Study Group Code for reviewing Tidy Text Mining [Chapter 3](https://www.tidytextmining.com/tfidf.html)  
   
- During our summer meetings, we'll be going through [Text Mining with R](https://www.tidytextmining.com/) in 1-2 chapter increments. Materials from our meetings will be posted here.  
+We take the code from Ch. 3 of the book and use it to look at popular words in Seinfeld Scripts.   
+  
+Data comes from [amanthedorkknight](https://github.com/amanthedorkknight/the-seinfeld-chronicles).
